@@ -1,0 +1,15 @@
+---
+title: "Homework 3 Solutions"
+author: "Matthew Ma"
+date: "2022-10-16"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+```
+
