@@ -93,3 +93,65 @@ instacart %>%
   spread(key = order_dow, value = mean_hour) %>%
   knitr::kable(digit=2)
 ```
+
+### Problem 2
+
+* Load tidy and wrangle the data
+
+```{r}
+acc_df = 
+  read_csv("data/accel_data.csv") %>% 
+  janitor::clean_names() %>%
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minutes",
+    values_to = "activity_count"
+  ) %>% 
+  mutate( minutes = str_sub(minutes,10),
+          minutes = as.numeric(minutes),
+          day = forcats::fct_relevel(day, "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"),
+          week_days = ifelse(day == "Saturday" | day == "Sunday", "weekend", "weekday")) %>% 
+  select(week, day_id, day, week_days, everything()) %>% 
+  arrange(week, day)
+```
+
+* The dataset `acc_df` has `r nrow(acc_df)` observations and `r ncol(acc_df)` variables with the names `r names(acc_df)`
+
+```{r}
+acc_df %>% 
+  group_by(week, day) %>% 
+  summarize(sum_activity = sum(activity_count, na.rm = TRUE)) %>%
+  pivot_wider(
+    names_from = "day",
+    values_from = "sum_activity"
+  ) %>% 
+  knitr::kable(digits = 2)
+```
+
+* Making a plot to distinguish a trend
+
+```{r}
+acc_df %>% 
+  group_by(week, day) %>% 
+  summarize(sum_activity = sum(activity_count, na.rm = TRUE)) %>% 
+  ggplot(aes(x = day, y = sum_activity, group = week, color = week)) +
+  geom_point() + 
+  geom_line()
+```
+
+* There is no apparent trend to be spotted on the graph. However, there are extremely low values spotted on the weekend compared to weekday. 
+
+* Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week.
+
+```{r}
+acc_df %>% 
+  mutate(hour = minutes / 60) %>% 
+  ggplot(aes(x = hour, y = activity_count, color = day)) + 
+  geom_line(alpha = 1)
+```
+
+* From this graph, we can conclude that there is a low activity count at night roughly from 11pm to 6am in the morning. The patient is most likely sleeping during the time period which explains the low activity count. And the activity starts to rise up after 6 am. Following a stable curve to rise up to the highest when it gets close to noon. Then there is a fluctuation between 12pm to 7pm. The activity count is the highest before the patient goes to sleep.
+
+### Problem 3
+
+
