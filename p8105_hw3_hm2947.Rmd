@@ -96,7 +96,7 @@ instacart %>%
 
 ### Problem 2
 
-* Load tidy and wrangle the data
+### Load tidy and wrangle the data
 
 ```{r}
 acc_df = 
@@ -128,7 +128,7 @@ acc_df %>%
   knitr::kable(digits = 2)
 ```
 
-* Making a plot to distinguish a trend
+### Making a plot to distinguish a trend
 
 ```{r}
 acc_df %>% 
@@ -141,7 +141,7 @@ acc_df %>%
 
 * There is no apparent trend to be spotted on the graph. However, there are extremely low values spotted on the weekend compared to weekday. 
 
-* Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week.
+### Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week.
 
 ```{r}
 acc_df %>% 
@@ -154,4 +154,79 @@ acc_df %>%
 
 ### Problem 3
 
+```{r}
+data("ny_noaa")
+
+ny_df = 
+  ny_noaa %>% 
+  as_tibble(ny_noaa)
+
+summary(ny_df)
+```
+
+```{r}
+
+ny_df = 
+  ny_noaa %>% 
+  janitor::clean_names() %>%
+  separate(col = date, into = c('year', 'month', 'day'), sep = "-", convert = TRUE) %>%
+  mutate(
+    month = month.name[month],
+    tmax = as.numeric(tmax),
+    tmin = as.numeric(tmin),
+    tmax = tmax/10,
+    tmin = tmin/10,
+    prcp = prcp/10)
+
+ny_df %>% 
+  count(snow, name = "n_obs") %>% 
+  arrange(desc(n_obs))
+```
+
+* The most commonly observed value for snow is 0 because snow days are rare in New York which only happen during winter. Most of the other time there is no snow.
+
+### Make a two panel plot showing the average max temperature of Janurary and July
+
+```{r}
+
+ny_df %>%
+  group_by(id, year, month) %>% 
+  filter(month == c("January", "July")) %>% 
+  summarize(avg_tmax = mean(tmax)) %>% 
+  ggplot(aes(x = year, y = avg_tmax, color = month)) +
+  geom_point() +
+  facet_grid(. ~ month) +
+  labs( x = "Year",
+        y = "Average Max Temperature",
+        title = "Average Max Temperature in Janurary and July Throughout Years")
+```
+
+* There is a clear difference in the average max temperature between January and July from 1980 to 2010. The average max temperature of January is clearly lower than that of July. There are outliers in 1982 January and 1988 July. For both months the average max temperature fluctuate. 
+
+### Make a plot showing tmax and tmin, make a plot showing the snow values greater than 0 and less than 100 in a year (separately).
+
+```{r}
+tmax_vs_tmin = 
+  ny_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_hex() +
+  labs( x = "Minimum Temperature in Celsiusc",
+        y = "Maximum Temperature in Celsius",
+        title = " Tmax vs Tmin")
+
+snowfall = 
+  ny_df %>% 
+  filter(snow > 0 & snow < 100) %>% 
+  mutate(
+    year = as.factor(year)
+  ) %>% 
+  ggplot(aes(x = snow, y = year)) +
+  geom_density_ridges(scale = .5) + 
+  theme(legend.position = "none") +
+  labs( x = "Snowfall in mm",
+        y = "Years",
+        title = "Snowfall Throughout the Years")
+
+tmax_vs_tmin + snowfall
+```
 
