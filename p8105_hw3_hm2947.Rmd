@@ -193,8 +193,9 @@ ny_df %>%
   group_by(id, year, month) %>% 
   filter(month == c("January", "July")) %>% 
   summarize(avg_tmax = mean(tmax)) %>% 
-  ggplot(aes(x = year, y = avg_tmax, color = month)) +
-  geom_point() +
+  ggplot(aes(x = year, y = avg_tmax, color = id)) +
+  geom_line(alpha = .5) +
+  theme(legend.position = "none") +
   facet_grid(. ~ month) +
   labs( x = "Year",
         y = "Average Max Temperature",
